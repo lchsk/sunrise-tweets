@@ -1,6 +1,7 @@
 package com.lchsk.sunrise;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class SunriseConfig
     private final String timeSeparator = ":";
     private final String logFileExtension = ".log";
     private final String logDirectory = "log/";
-    
+
     /*
      * File that holds list of languages with translations of the word 'sunrise'
      */
@@ -40,6 +41,10 @@ public class SunriseConfig
     public final String tweetsFile = "tweets-debug.txt";
 
     private Mode mode;
+
+    // config data
+    private final String configFilename = "config";
+    private HashMap<String, String> settings = new HashMap<String, String>();
 
     public static SunriseConfig getInstance()
     {
@@ -61,9 +66,13 @@ public class SunriseConfig
     {
         try
         {
+            // set up log file
             logFile = new FileHandler(logDirectory + getLogFilename(), false);
             logFile.setFormatter(new SimpleFormatter());
             registerLogger(log);
+
+            readConfigFile();
+
         } catch (SecurityException | IOException e)
         {
             e.printStackTrace();
@@ -71,6 +80,40 @@ public class SunriseConfig
 
         translations = new HashMap<String, ArrayList<String>>();
         mode = Mode.COLLECT_TWEETS_FILE;
+    }
+
+    private void readConfigFile()
+    {
+        BufferedReader configFile = null; 
+        try
+        {
+            configFile = new BufferedReader(new FileReader(configFilename));
+
+            String line;
+            while ((line = configFile.readLine()) != null)
+            {
+                // omit lines starting with '#'
+                // because they're comments
+                if ( ! line.startsWith("#"))
+                {
+                    // syntax is: 
+                    // key=value
+                    String[] pair = line.split("=");
+                    settings.put(pair[0], pair[1]);
+                }
+            }
+            configFile.close();
+
+        } catch (FileNotFoundException e)
+        {
+            log.severe("Configuration file " + configFilename + " not found. Shutting down...");
+            System.exit(1);
+        }
+        catch(Exception e)
+        {
+            log.severe("Error reading configuration file...");
+        }
+        
     }
 
     /*
@@ -139,6 +182,11 @@ public class SunriseConfig
 
         return dateString.toString() + logFileExtension;
     }
+    
+    public String getSetting(String p_key)
+    {
+        return settings.get(p_key);
+    }
 
     public void setMode(Mode p_mode)
     {
@@ -161,5 +209,10 @@ public class SunriseConfig
 
         // System.out.println(tracked);
         return tracked;
+    }
+
+    public HashMap<String, ArrayList<String>> getTranslationsMap()
+    {
+        return translations;
     }
 }

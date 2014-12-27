@@ -1,0 +1,10 @@
+# database connection data
+db_host=localhost
+db_name=sunrise
+# db collections
+# cities data
+cities_coll=cities
+# collections used as a source
+deb_tweets_coll=source_tweets
+# destination collection
+tweets_coll=tweets

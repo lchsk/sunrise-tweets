@@ -22,7 +22,7 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
 
 public class StreamingSpout extends BaseRichSpout
 {
-    private final Logger log = Logger.getLogger(StreamingSpout.class.getName());
+    private final static Logger log = Logger.getLogger(StreamingSpout.class.getName());
     
     private BlockingQueue<String> queue;
     private SpoutOutputCollector collector;

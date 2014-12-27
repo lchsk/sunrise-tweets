@@ -45,8 +45,6 @@ public class TweetsCollectorFile extends BaseBasicBolt
             log.severe("Cannot save '" + input + "' to a file.");
             e.printStackTrace();
         }
-        finally{
-        }
     }
 
     @Override
