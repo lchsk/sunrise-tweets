@@ -1,11 +1,18 @@
 package com.lchsk.sunrise.util;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.net.URL;
 import java.util.Locale;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.lang.GeoLocation;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.GpsDirectory;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
@@ -67,6 +74,32 @@ public class Utils
     {
         Locale locale = new Locale("en", p_countryCode, "WIN");
         return locale.getDisplayCountry();
+    }
+    
+    public static Double[] readImageCoordinates(String p_url)
+    {
+        try
+        {
+            URL link = new URL(p_url);
+            
+            BufferedInputStream in = new BufferedInputStream(link.openStream());
+            Metadata metadata = ImageMetadataReader.readMetadata(in, true);
+            
+            GpsDirectory gpsDirectory = metadata.getDirectory(GpsDirectory.class);
+            if (gpsDirectory == null)
+                return null;
+            
+            GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+            Double[] loc = new Double[2];
+            loc[0] = geoLocation.getLongitude();
+            loc[1] = geoLocation.getLatitude();
+
+            return loc;
+        }
+        catch(Exception e)
+        {
+            return null;
+        }
     }
     
     public static DBObject parseJSON(String p_string)

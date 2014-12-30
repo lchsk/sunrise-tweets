@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import backtype.storm.task.TopologyContext;
@@ -20,6 +21,7 @@ import com.lchsk.sunrise.db.DBConn;
 import com.lchsk.sunrise.db.DBConn.CitySearchMode;
 import com.lchsk.sunrise.util.SearchTerms;
 import com.lchsk.sunrise.util.Utils;
+import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 
 public class LocationFinder extends BaseBasicBolt
@@ -39,14 +41,20 @@ public class LocationFinder extends BaseBasicBolt
 
     // location copied from user's profile
     private final int GEO_USER_PROFILE = 3;
+    
+    private final int GEO_IMAGE_COORDINATES = 4;
 
     // regardless of effort
     // no location was found
-    private final int GEO_NO_LOCATION = 4;
+    private final int GEO_NO_LOCATION = 0;
 
     // minimum length of the search term
     // (for geographic locations)
     private final int SEARCH_TERM_MIN_LENGTH = 3;
+
+    // maximum distance (in meters)
+    // for searching closest largest city
+    private final int MAX_DISTANCE = 30000;
 
     @Override
     public void cleanup()
@@ -64,11 +72,15 @@ public class LocationFinder extends BaseBasicBolt
         {
             if (!getCoordinates(json))
             {
-                if (!lookForLocation(json))
+                // left for reference
+                //if (!getImageCoordinates(json))
                 {
-                    if (!getProfileLocation(json))
+                    if (!lookForLocation(json))
                     {
-                        saveNoLocation(json);
+                        if (!getProfileLocation(json))
+                        {
+                            saveNoLocation(json);
+                        }
                     }
                 }
             }
@@ -95,23 +107,76 @@ public class LocationFinder extends BaseBasicBolt
         if (Utils.notEmpty(p_json.get("coordinates")))
         {
             p_json.put("sunrise_geo_type", GEO_COORDINATES);
+            
+            JSONObject point = (JSONObject) p_json.get("coordinates");
+            
+            if (point != null)
+            {
+                JSONArray coords = (JSONArray) point.get("coordinates");
+                int id = DBConn.getInstance().findCity((double) coords.get(0), (double) coords.get(1), MAX_DISTANCE);
+                addCity(id, p_json, "closest_city");
+            }
 
             if (Utils.notEmpty(p_json.get("place")))
             {
                 JSONObject o = (JSONObject) p_json.get("place");
+                p_json.put("country_full", (String) Utils.getCountry((String) o.get("country_code")));
                 String city = (String) o.get("name");
-
-                int id = DBConn.getInstance().findCity(city, CitySearchMode.ORIGINAL_PLUS_ASCII);
-                if (id > -1)
-                {
-                    DBObject d = DBConn.getInstance().getRow(id);
-
-                    if (d.get("country_code").equals((String) d.get("country_code")))
-                        p_json.put("sunrise_geo_identified", d);
-                }
             }
 
             return true;
+        }
+
+        return false;
+    }
+
+    private void addCity(int p_id, JSONObject p_json, String p_key) throws UnknownHostException
+    {
+        if (p_id > -1)
+        {
+            DBObject d = DBConn.getInstance().getRow(p_id);
+
+            p_json.put(p_key, fixId(d));
+        }
+    }
+
+    private boolean getImageCoordinates(JSONObject p_json) throws UnknownHostException
+    {
+        if (p_json.containsKey("entities"))
+        {
+            JSONObject entities = (JSONObject) p_json.get("entities");
+
+            if (entities.containsKey("media"))
+            {
+                JSONArray media = (JSONArray) entities.get("media");
+
+                if (media.size() > 0)
+                {
+                    JSONObject image = (JSONObject) media.get(0);
+
+                    if (image.containsKey("media_url"))
+                    {
+                        String url = (String) image.get("media_url");
+                        Double[] coords = Utils.readImageCoordinates(url);
+
+                        if (coords != null)
+                        {
+                            int id = DBConn.getInstance().findCity(coords[0], coords[1], MAX_DISTANCE);
+
+                            JSONArray tmp = new JSONArray();
+                            tmp.add(coords[0]);
+                            tmp.add(coords[1]);
+
+                            p_json.put("image_coordinates", coords);
+                            p_json.put("sunrise_geo_type", GEO_IMAGE_COORDINATES);
+                            
+                            addCity(id, p_json, "closest_city");
+
+                            return true;
+                        }
+                    }
+                }
+            }
         }
 
         return false;
@@ -134,8 +199,9 @@ public class LocationFinder extends BaseBasicBolt
                     if (id > -1)
                     {
                         DBObject o = DBConn.getInstance().getRow(id);
+                        o.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
                         p_json.put("sunrise_geo_type", GEO_USER_PROFILE);
-                        p_json.put("sunrise_geo_identified", o);
+                        p_json.put("sunrise_geo_identified", fixId(o));
                     }
 
                     return true;
@@ -144,6 +210,14 @@ public class LocationFinder extends BaseBasicBolt
         }
 
         return false;
+    }
+
+    private DBObject fixId(DBObject o)
+    {
+        //        String tmp = (String) o.get("_id");
+        //        tmp = "x" + tmp;
+        o.put("_id", "123");
+        return o;
     }
 
     private boolean lookForLocation(JSONObject p_json) throws UnknownHostException
@@ -157,7 +231,8 @@ public class LocationFinder extends BaseBasicBolt
             if (o != null)
             {
                 p_json.put("sunrise_geo_type", GEO_TWEET_CONTENT);
-                p_json.put("sunrise_geo_identified", o);
+                o.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
+                p_json.put("sunrise_geo_identified", fixId(o));
 
                 return true;
             }
@@ -168,7 +243,8 @@ public class LocationFinder extends BaseBasicBolt
                 if (o != null)
                 {
                     p_json.put("sunrise_geo_type", GEO_TWEET_CONTENT);
-                    p_json.put("sunrise_geo_identified", o);
+                    o.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
+                    p_json.put("sunrise_geo_identified", fixId(o));
 
                     return true;
                 }
@@ -217,6 +293,7 @@ public class LocationFinder extends BaseBasicBolt
         {
             for (String word : SunriseConfig.getInstance().getTranslationsMap().get(lang))
             {
+                // case insensitive replacing 
                 str = str.replaceAll("(?i)" + word, "");
             }
         }

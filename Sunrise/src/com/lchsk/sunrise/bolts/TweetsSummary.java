@@ -1,11 +1,11 @@
 package com.lchsk.sunrise.bolts;
 
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
@@ -13,11 +13,10 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 
-import com.lchsk.sunrise.SunriseConfig;
 import com.lchsk.sunrise.db.DBConn;
 import com.lchsk.sunrise.util.Utils;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
@@ -30,7 +29,7 @@ public class TweetsSummary extends BaseBasicBolt
     @Override
     public void cleanup()
     {
-        
+
     }
 
     @Override
@@ -38,15 +37,39 @@ public class TweetsSummary extends BaseBasicBolt
     {
         collector = p_collector;
         JSONObject json = (JSONObject) input.getValueByField("tweet");
-        
+
+        //json.put("created_at", time);
+
         saveTweet(json);
     }
-    
+
     private void saveTweet(JSONObject p_json)
     {
-        DBObject o = Utils.parseJSON(p_json.toJSONString());
-        
-        collection.save(o);
+        DBObject o = null;
+        try
+        {
+            JSONObject tmp = (JSONObject) p_json.get("_id");
+            o = Utils.parseJSON(p_json.toJSONString());
+
+            long m = Long.valueOf((String) p_json.get("timestamp_ms"));
+            Date d = new Date(m);
+            o.put("created_at", d);
+            collection.save(o);
+        }
+        catch (com.mongodb.util.JSONParseException e)
+        {
+            e.printStackTrace();
+            log.warning("JSON is not valid.");
+            p_json.put("_id", "123");
+            System.out.println(p_json);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out.println(p_json);
+            log.severe("Error parsing json: " + e.getMessage());
+        }
+
     }
 
     @Override

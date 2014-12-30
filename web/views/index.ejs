@@ -1,0 +1,63 @@
+<% include top.ejs %>
+<% include nav.ejs %>
+
+    <div class="container-fluid" id="content">
+        <div class="row" />
+          <div class="col-md-2">
+            <h4>View</h4>
+            <div class="btn-group" role="group" aria-label="">
+              <button context="map" id="btn-map" type="button" class="btn btn-default btn-mode">Map</button>
+              <button context="list" id="btn-list" type="button" class="btn btn-default btn-mode">List</button>
+            </div>
+
+            <h4>From</h4>
+            <div class='input-group date' id='date-from'>
+              <input type='text' class="form-control" data-date-format="DD/MM/YYYY HH:mm" />
+              <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+            </span>
+            </div>
+
+            <h4>To</h4>
+            <div class='input-group date' id='date-to'>
+              <input type='text' class="form-control" data-date-format="DD/MM/YYYY HH:mm" />
+              <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+            </span>
+            </div>
+
+            <div class="checkbox">
+              <label data-toggle="tooltip" title="If checked, tweets with photos will be shown.">
+                <input type="checkbox" checked="true" id="form-photos-only"> Tweets with photos
+              </label>
+            </div>
+
+            <div class="checkbox">
+              <label data-toggle="tooltip" title="If checked, tweets with coordinates attached to them will be shown.">
+                <input type="checkbox" checked="true" id="form-tweet-coords"> Tweet geolocation
+              </label>
+            </div>
+
+            <div class="checkbox">
+              <label data-toggle="tooltip" title="If checked, tweets with coordinates obtained by other methods will be shown.">
+                <input type="checkbox" checked="true" id="form-analysis-coords"> Tweets with analysis-based location
+              </label>
+            </div>
+
+            <div class="checkbox">
+              <label data-toggle="tooltip" title="If checked, tweets with no location will be shown.">
+                <input type="checkbox" checked="true" id="form-no-location"> Tweets without location
+              </label>
+            </div>
+
+          <br />
+          <a href="#" id="btn-submit" class="btn btn-success btn-large"><i class="icon-white icon-ok"></i> Show</a>          </div>
+          <div class="col-md-10">
+            <div class="mode-view" id="map" style="height: 550px;"></div>
+            <div class="mode-view" id="list">
+              <div class="container-fluid">
+                <div class="row" id="list-data"></div>
+              </div>
+            </div>
+          </div>
+      </div>
+<% include modal.ejs %>
+<% include bottom.ejs %>

@@ -3,7 +3,6 @@ package com.lchsk.sunrise;
 import java.util.logging.Logger;
 
 import com.lchsk.sunrise.db.DBConn;
-import com.lchsk.sunrise.db.DBConn.CitySearchMode;
 import com.lchsk.sunrise.util.Utils;
 
 public class Main
@@ -35,8 +34,15 @@ public class Main
         SunriseConfig.getInstance().setMode(Mode.DEBUGGING_DB);
 
         try
-        {
-            //DBConn.getInstance().findCity(-2.97, 53.41, 1000);
+        {   
+            //https://raw.githubusercontent.com/drewnoakes/metadata-extractor-images/master/Apple%20iPhone%204.jpg
+            
+//            Double[] d = Utils.readImageCoordinates("http://lchsk.com/gps.jpg");
+//            System.out.println(d[1] + ", " + d[0]);
+            
+            
+
+//            System.out.println(DBConn.getInstance().findCity(-102.432504, 19.956083, 25000));
 //            System.out.println(DBConn.getInstance().findCity("", CitySearchMode.ALTERNATE_NAMES_FULL));
         } catch (Exception e)
         {
