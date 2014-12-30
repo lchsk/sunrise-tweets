@@ -200,6 +200,7 @@ public class LocationFinder extends BaseBasicBolt
                     {
                         DBObject o = DBConn.getInstance().getRow(id);
                         o.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
+                        p_json.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
                         p_json.put("sunrise_geo_type", GEO_USER_PROFILE);
                         p_json.put("sunrise_geo_identified", fixId(o));
                     }
@@ -232,6 +233,7 @@ public class LocationFinder extends BaseBasicBolt
             {
                 p_json.put("sunrise_geo_type", GEO_TWEET_CONTENT);
                 o.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
+                p_json.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
                 p_json.put("sunrise_geo_identified", fixId(o));
 
                 return true;
@@ -244,6 +246,7 @@ public class LocationFinder extends BaseBasicBolt
                 {
                     p_json.put("sunrise_geo_type", GEO_TWEET_CONTENT);
                     o.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
+                    p_json.put("country_full", (String) Utils.getCountry((String) o.get("country code")));
                     p_json.put("sunrise_geo_identified", fixId(o));
 
                     return true;

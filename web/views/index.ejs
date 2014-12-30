@@ -8,6 +8,7 @@
             <div class="btn-group" role="group" aria-label="">
               <button context="map" id="btn-map" type="button" class="btn btn-default btn-mode">Map</button>
               <button context="list" id="btn-list" type="button" class="btn btn-default btn-mode">List</button>
+              <button context="stats" id="btn-stats" type="button" class="btn btn-default btn-mode">Stats</button>
             </div>
 
             <h4>From</h4>
@@ -51,6 +52,23 @@
           <br />
           <a href="#" id="btn-submit" class="btn btn-success btn-large"><i class="icon-white icon-ok"></i> Show</a>          </div>
           <div class="col-md-10">
+            <div class="mode-view" id="stats">
+              <i>Charts below are generated dynamically based on data obtained with settings on the left.</i>
+
+              <h4>Number of tweets per country</h4>
+              <div id="div-chart-countries"></div>
+
+              <h4>Languages (as identified by Twitter)</h4>
+              <div id="div-chart-t-langs"></div>
+
+              <h4>Languages (as identified when searching for sunrise tweets)</h4>
+              <div id="div-chart-s-langs"></div>
+
+              <h4>Location data</h4>
+              <h5>Legend: 0 - no location, 1 - coordinates attached to tweets, 2 - location from analysis of tweets' content, 3 - location from user's profile</h5>
+              <div id="div-chart-location"></div>
+              <br /><br />
+            </div>
             <div class="mode-view" id="map" style="height: 550px;"></div>
             <div class="mode-view" id="list">
               <div class="container-fluid">
