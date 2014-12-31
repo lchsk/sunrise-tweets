@@ -1,6 +1,7 @@
 function initMap()
 {
-  map = L.map('map').setView([23, 0], 2);
+  var world = countries_data['World'];
+  map = L.map('map').setView([world[0], world[1]], world[2]);
   L.tileLayer(MB_URL, {attribution: MB_ATTR, id: 'examples.map-i875mjb7'}).addTo(map);
   map.addLayer(markers);
 }

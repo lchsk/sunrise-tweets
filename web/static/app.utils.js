@@ -33,3 +33,9 @@ function removeTags(p_template)
 
   return p_template.replace(re, '');
 }
+
+function autoExpire(p_selector, p_delay)
+{
+  var alert = $(p_selector).alert();
+  window.setTimeout(function() { alert.alert('close') }, p_delay);
+}

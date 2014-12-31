@@ -4,8 +4,9 @@ var countries_data = {
   'Poland': [52, 20, 6],
   'Europe': [53, 21, 4],
   'World': [23, 0, 2],
-  'United Kingdom': [54, -2, 6],
-  'United Kingdom': [54, -2, 6]
+  'Australia': [-25, 133, 4],
+  'The Caribbean': [16, -70, 5],
+  'Italy': [41.5, 15, 6]
 }
 
 var GEO_NO_LOCATION = 0;

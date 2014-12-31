@@ -65,6 +65,15 @@ public class Topology
                 builder.setBolt("location-finder", new LocationFinder()).shuffleGrouping("language-identifier");
                 builder.setBolt("tweets-summary", new TweetsSummary()).shuffleGrouping("location-finder");
                 break;
+                
+            case LIVE:
+                builder.setSpout("sunrise-tweets", new StreamingSpout(), 1);
+//                builder.setBolt("tweets-collector-db", new TweetsCollectorDB()).shuffleGrouping("sunrise-tweets");
+                builder.setBolt("language-identifier", new LanguageIdentifier()).shuffleGrouping("sunrise-tweets");
+                builder.setBolt("location-finder", new LocationFinder()).shuffleGrouping("language-identifier");
+                builder.setBolt("tweets-summary", new TweetsSummary()).shuffleGrouping("location-finder");
+                
+                break;
         }
 
         LocalCluster cluster = new LocalCluster();

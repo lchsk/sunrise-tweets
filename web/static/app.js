@@ -62,24 +62,6 @@ socket.on('tweets', function(data){
   }
 });
 
-
-// on load of page
-$(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-    $('#date-from').datetimepicker({
-      defaultDate: "01/01/2014"
-    });
-    $('#date-to').datetimepicker({
-      defaultDate: "31/12/2015"
-    });
-
-  showView($("#btn-list"));
-
-  $("#navbar li").click(function(d){
-    $("#navbar li").removeClass('active');
-    $(this).addClass('active');
-  });
-
 function showView(p_context)
 {
   refreshMap();
@@ -91,9 +73,110 @@ function showView(p_context)
   $(p_context).addClass('active');
 }
 
+function show()
+{
+  var photos_only = $("#form-photos-only").is(':checked');
+  var tweet_geolocation = $("#form-tweet-coords").is(':checked');
+  var analysis_geolocation = $("#form-analysis-coords").is(':checked');
+  var no_location = $("#form-no-location").is(':checked');
+
+  var date_from = $("#date-from .form-control");
+
+  if (date_from != undefined)
+    date_from = Date.parseExact(date_from.val(), 'dd/MM/yyyy HH:mm').getTime();
+
+    var date_to = $("#date-to .form-control");
+    if (date_to != undefined)
+      date_to = Date.parseExact(date_to.val(), 'dd/MM/yyyy HH:mm').getTime();
+
+      var data = {
+        from: date_from,
+        to: date_to,
+        photos_only: photos_only,
+        tweet_geolocation: tweet_geolocation,
+        analysis_geolocation: analysis_geolocation,
+        no_location: no_location
+      };
+
+      $("#list").empty();
+      socket.emit('init', data);
+}
+
+function initApp()
+{
+  showView($("#btn-map"));
+  show();
+}
+
+
+// on load of page
+$(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    $('#date-from').datetimepicker({
+      defaultDate: "01/01/2014",
+      showToday: true
+    });
+    $('#date-to').datetimepicker({
+      defaultDate: "31/12/2015",
+      showToday: true
+    });
+
+  initApp();
+
+  $("#nav-live").click(function(){
+    if ($(this).attr('data-state') == 'on')
+    {
+      // turn OFF
+      $(this).attr('data-state', 'off');
+      $(this).html('<span class="glyphicon glyphicon-play"></span> Start system');
+
+      try
+      {
+        socket.emit('live_turn_off');
+        $('#alerts').append('<div class="alert alert-info">System was stopped.</div>');
+      }
+      catch(err)
+      {
+        $('#alerts').append('<div class="alert alert-error">Error when stopping the system: ' + err + '</div>');
+      }
+
+      window.setTimeout(function(){
+        $('#alerts .alert').fadeOut();
+      }, 5000);
+    }
+    else
+    {
+      // turn ON
+      $(this).attr('data-state', 'on');
+      $(this).html('<span class="glyphicon glyphicon-pause"></span> Stop system');
+
+      try
+      {
+        socket.emit('live_turn_on');
+        $('#alerts').append('<div class="alert alert-info">System was started.</div>');
+      }
+      catch(err)
+      {
+        $('#alerts').append('<div class="alert alert-error">Error when starting the system: ' + err + '</div>');
+      }
+
+      window.setTimeout(function(){
+        $('#alerts .alert').fadeOut();
+      }, 5000);
+    }
+  });
+
+  $("#navbar li").click(function(d){
+    $("#navbar li").removeClass('active');
+    $(this).addClass('active');
+  });
+
+
   $(".btn-mode").click(function(){
     showView(this);
   });
+
+
 
   // onclick action
   // top navbar: show country button
@@ -114,31 +197,7 @@ function showView(p_context)
 
 
   $("#btn-submit").click(function(){
-    var photos_only = $("#form-photos-only").is(':checked');
-    var tweet_geolocation = $("#form-tweet-coords").is(':checked');
-    var analysis_geolocation = $("#form-analysis-coords").is(':checked');
-    var no_location = $("#form-no-location").is(':checked');
-
-    var date_from = $("#date-from .form-control");
-
-    if (date_from != undefined)
-      date_from = Date.parseExact(date_from.val(), 'dd/MM/yyyy HH:mm').getTime();
-
-    var date_to = $("#date-to .form-control");
-    if (date_to != undefined)
-      date_to = Date.parseExact(date_to.val(), 'dd/MM/yyyy HH:mm').getTime();
-
-    var data = {
-      from: date_from,
-      to: date_to,
-      photos_only: photos_only,
-      tweet_geolocation: tweet_geolocation,
-      analysis_geolocation: analysis_geolocation,
-      no_location: no_location
-    };
-
-    $("#list").empty();
-    socket.emit('init', data);
+    show();
   });
 
 

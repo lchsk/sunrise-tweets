@@ -4,6 +4,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var mongo = require('mongodb').MongoClient, format = require('util').format;
+var exec = require('child_process').exec;
 
 var GEO_NO_LOCATION = 0;
 var GEO_COORDINATES = 1;
@@ -20,6 +21,11 @@ server_port = 3000;
 
 // website's address
 www_host = 'http://localhost:3000';
+
+runnable_path = '../sunrise-runnable';
+web_path = '../web';
+start_script = './start-sunrise.sh';
+stop_script = './stop-sunrise.sh';
 
 //-- end of settings
 
@@ -39,7 +45,47 @@ app.get('/about', function (req, res){
   res.render('about', { host: www_host });
 });
 
+// util functions
+
+function changeWorkingDir(p_dir)
+{
+  try
+{
+  console.log('Old working directory: ' + process.cwd());
+  process.chdir(p_dir);
+  console.log('New working directory: ' + process.cwd());
+}
+catch (err)
+{
+  console.log('chdir: ' + err);
+}
+}
+
+function executeScript(p_script)
+{
+  try
+  {
+  exec(p_script,
+    function (error, stdout, stderr) {
+      console.log('stdout: ' + stdout);
+      console.log('stderr: ' + stderr);
+      if (error !== null) {
+        console.log('exec error: ' + error);
+      }
+    });
+  }
+  catch(err)
+{
+  console.log(err);
+}
+}
+
+//--
+
 io.sockets.on('connection', function(socket){
+
+
+
 
 	socket.on('init', function(data){
 
@@ -84,4 +130,21 @@ io.sockets.on('connection', function(socket){
       });
     });
 	});
+
+  socket.on('live_turn_on', function(){
+    console.log('Turning sunrise tweets on...');
+
+    changeWorkingDir(runnable_path);
+    executeScript(start_script);
+    changeWorkingDir(web_path);
+  });
+
+  socket.on('live_turn_off', function(){
+    console.log('Turning sunrise tweets off...');
+
+    changeWorkingDir(runnable_path);
+    executeScript(stop_script);
+    changeWorkingDir(web_path);
+  });
+
 });

@@ -24,14 +24,17 @@ public class Main
         
         // same as debugging
         // but uses database instead of file
-        DEBUGGING_DB
+        DEBUGGING_DB,
+        
+        // system working in real-time
+        LIVE
     }
 
     public static void main(String[] args)
     {
         SunriseConfig.getInstance().readTranslationsFile();
         SunriseConfig.getInstance().registerLogger(log);
-        SunriseConfig.getInstance().setMode(Mode.DEBUGGING_DB);
+        SunriseConfig.getInstance().setMode(Mode.LIVE);
 
         try
         {   
