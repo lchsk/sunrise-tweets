@@ -18,6 +18,11 @@ db_name = 'sunrise';
 db_collection = 'tweets';
 server_port = 3000;
 
+// website's address
+www_host = 'http://localhost:3000';
+
+//-- end of settings
+
 server.listen(process.env.PORT || server_port);
 app.set('view engine', 'ejs');
 app.set('view options', { layout: false });
@@ -27,11 +32,11 @@ app.use(app.router);
 app.use('/static', express.static('static'));
 
 app.get('/', function (req, res) {
-  res.render('index');
+  res.render('index', { host: www_host });
 });
 
 app.get('/about', function (req, res){
-  res.render('about');
+  res.render('about', { host: www_host });
 });
 
 io.sockets.on('connection', function(socket){

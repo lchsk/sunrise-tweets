@@ -27,25 +27,25 @@
 
             <div class="checkbox">
               <label data-toggle="tooltip" title="If checked, tweets with photos will be shown.">
-                <input type="checkbox" checked="true" id="form-photos-only"> Tweets with photos
+                <input type="checkbox" checked="checked" id="form-photos-only"> Tweets with photos
               </label>
             </div>
 
             <div class="checkbox">
               <label data-toggle="tooltip" title="If checked, tweets with coordinates attached to them will be shown.">
-                <input type="checkbox" checked="true" id="form-tweet-coords"> Tweet geolocation
+                <input type="checkbox" checked="checked" id="form-tweet-coords"> Tweets with geolocation
               </label>
             </div>
 
             <div class="checkbox">
               <label data-toggle="tooltip" title="If checked, tweets with coordinates obtained by other methods will be shown.">
-                <input type="checkbox" checked="true" id="form-analysis-coords"> Tweets with analysis-based location
+                <input type="checkbox" id="form-analysis-coords"> Tweets with analysis-based location
               </label>
             </div>
 
             <div class="checkbox">
               <label data-toggle="tooltip" title="If checked, tweets with no location will be shown.">
-                <input type="checkbox" checked="true" id="form-no-location"> Tweets without location
+                <input type="checkbox" id="form-no-location"> Tweets without location
               </label>
             </div>
 
@@ -53,7 +53,7 @@
           <a href="#" id="btn-submit" class="btn btn-success btn-large"><i class="icon-white icon-ok"></i> Show</a>          </div>
           <div class="col-md-10">
             <div class="mode-view" id="stats">
-              <i>Charts below are generated dynamically based on data obtained with settings on the left.</i>
+              <i>Charts below are generated dynamically (click <i>Show</i> to refresh) based on data obtained with settings on the left.</i>
 
               <h4>Number of tweets per country</h4>
               <div id="div-chart-countries"></div>
