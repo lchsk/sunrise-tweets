@@ -6,6 +6,7 @@ function increment(p_map, p_key)
     p_map[p_key]++;
 }
 
+// replaces tags with a value obtained from the tweet
 function fillWorker(p_tweet, p_template, p_key, p_placeholder)
 {
   var value = "";
@@ -15,6 +16,7 @@ function fillWorker(p_tweet, p_template, p_key, p_placeholder)
   return replaceAll(p_template, ":" + p_placeholder, value);
 }
 
+// utility function for fillWorker
 function fill(p_tweet, p_template, p_key)
 {
   return fillWorker(p_tweet, p_template, p_key, p_key);
@@ -27,15 +29,10 @@ function replaceAll(p_where, p_source, p_target)
   return p_where.replace(re, p_target);
 }
 
+// removes all values beginning with ':' (used as tags)
 function removeTags(p_template)
 {
   var re = new RegExp(":[a-z_]+", 'g');
 
   return p_template.replace(re, '');
-}
-
-function autoExpire(p_selector, p_delay)
-{
-  var alert = $(p_selector).alert();
-  window.setTimeout(function() { alert.alert('close') }, p_delay);
 }

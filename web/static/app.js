@@ -6,8 +6,10 @@ socket.on('connect', function() {
 
 socket.on('tweets', function(data){
 
+  // template for information in list mode
   var template = '<div class="tpl-tweet-list" style="background-color: white; width: 22%; float: left; margin: 8px;"><a class="small" href="http://twitter.com/:screen_name" data-placement="left" title=":description"><b>:name</b> (:screen_name):</a><br /> <small>:text</small><br /><small><i>:created_at</i></small><br /><small><i>sunrise</i> word found in :sunrise_language</small> <br /><small>Location: :city_name :country_name (:sunrise_geo_type)<br />City w/in 30 km, based on coordinates: :large_city</small><br />:button :show_on_map</div>';
 
+  // template for presenting information in map mode
   var popup_template = '<a class="small" href="http://twitter.com/:screen_name" title=":description"><b>:name</b> (:screen_name):</a><br /> <small>:text</small><br /><small><i>:created_at</i></small><br /><small><i>sunrise</i> word found in :sunrise_language</small><br /><small>Location: :city_name :country_name (:sunrise_geo_type)<br />City w/in 30 km, based on coordinates: :large_city</small><br />:button';
 
   var added = 0;
@@ -23,24 +25,12 @@ socket.on('tweets', function(data){
     var data_box = applyTemplate(template, data[i]);
     var data_map = applyTemplate(popup_template, data[i]);
 
-    try{
-    if (data[i]['sunrise_geo_type'] == GEO_COORDINATES)
+    // draw markers on the map
+    try
     {
-      var coords = data[i]['coordinates']['coordinates'];
-      if (coords != undefined)
+      if (data[i]['sunrise_geo_type'] == GEO_COORDINATES)
       {
-          var marker = L.marker([coords[1], coords[0]]);
-          marker.bindPopup(data_map, {showOnMouseOver: true}).openPopup();
-          markers.addLayer(marker);
-      }
-    }
-    else if (data[i]['sunrise_geo_type'] == GEO_TWEET_CONTENT || data[i]['sunrise_geo_type'] == GEO_USER_PROFILE)
-    {
-      var place_data = data[i]['sunrise_geo_identified'];
-      if (place_data != undefined)
-      {
-        var coords = [place_data.longitude, place_data.latitude];
-
+        var coords = data[i]['coordinates']['coordinates'];
         if (coords != undefined)
         {
           var marker = L.marker([coords[1], coords[0]]);
@@ -48,13 +38,28 @@ socket.on('tweets', function(data){
           markers.addLayer(marker);
         }
       }
-    }
-  }
-  catch(err)
-{
-  console.log('Error adding a tweet to the map: ' + err);
-}
+      else if (data[i]['sunrise_geo_type'] == GEO_TWEET_CONTENT || data[i]['sunrise_geo_type'] == GEO_USER_PROFILE)
+      {
+        var place_data = data[i]['sunrise_geo_identified'];
+        if (place_data != undefined)
+        {
+          var coords = [place_data.longitude, place_data.latitude];
 
+          if (coords != undefined)
+          {
+            var marker = L.marker([coords[1], coords[0]]);
+            marker.bindPopup(data_map, {showOnMouseOver: true}).openPopup();
+            markers.addLayer(marker);
+          }
+        }
+      }
+    }
+    catch(err)
+    {
+      console.log('Error adding a tweet to the map: ' + err);
+    }
+
+    // append obtained information to the list
     $("#list").append(data_box);
     added++;
     if (added % 4 == 0)
@@ -62,6 +67,7 @@ socket.on('tweets', function(data){
   }
 });
 
+// changes current view shown (map/list/stats)
 function showView(p_context)
 {
   refreshMap();
@@ -73,6 +79,8 @@ function showView(p_context)
   $(p_context).addClass('active');
 }
 
+// called when form is submitted
+// gets selected settings and calls server function
 function show()
 {
   var photos_only = $("#form-photos-only").is(':checked');
@@ -140,7 +148,7 @@ $(function(){
         $('#alerts').append('<div class="alert alert-error">Error when stopping the system: ' + err + '</div>');
       }
 
-      window.setTimeout(function(){
+      window.setTimeout(function( ){
         $('#alerts .alert').fadeOut();
       }, 5000);
     }
@@ -200,7 +208,7 @@ $(function(){
     show();
   });
 
-
+  
   $(".mode-view").on("click", ".btn-show-img", function(){
     var url = $(this).attr('modal-image');
     $("#modal-img #modal-image").attr('src', url);

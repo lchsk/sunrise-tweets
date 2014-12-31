@@ -1,3 +1,5 @@
+// changes format of statistics data
+// returns seperate arrays of keys and values
 function getBarChartData(p_map)
 {
   var keys = [];
@@ -11,6 +13,7 @@ function getBarChartData(p_map)
   return {keys: keys, values: values};
 }
 
+// prepares canvas to draw charts on
 function createCanvas(p_parent_id, p_canvas_id)
 {
   $("#" + p_canvas_id).remove();
@@ -34,6 +37,7 @@ function drawBarChart(p_parent_id, p_canvas_id, p_map)
 
 function calculate_stats(p_d)
 {
+  // 4 stats currenty available
   var countries = {};
   var tweet_languages = {};
   var sunrise_languages = {};
