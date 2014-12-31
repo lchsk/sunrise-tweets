@@ -1,11 +1,20 @@
 package com.lchsk.sunrise.util;
 
+/**
+ * Helper class for searching a text for specific keywords.
+ */
 public class SearchTerms
 {
     private String[] array;
     private int words;
     private int index;
     
+    /**
+     * Search can be performed among n-word combinations
+     * 
+     * @param p_arr
+     * @param p_words number of words in combination
+     */
     public SearchTerms(String[] p_arr, int p_words)
     {
         array = p_arr;
@@ -19,6 +28,7 @@ public class SearchTerms
         
         for (int i = index, j = 0; i < array.length; i++, j++)
         {
+            // break if already we have a specific number of words in a combination
             if (j >= words)
                 break;
             

@@ -14,6 +14,11 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
+/**
+ * FileSpout emits tweets that are stored in a file.
+ * (similarly to DBSpout it is mostly used for debugging).
+ *
+ */
 public class FileSpout extends BaseRichSpout
 {
     private final static Logger log = Logger.getLogger(FileSpout.class.getName());
@@ -32,6 +37,8 @@ public class FileSpout extends BaseRichSpout
         {
             String line = file.readLine();
             
+            // if it's available, emit next line from the file
+            // (tweets are stored in seperate lines)
             if (line != null)
                 collector.emit(new Values(line));
             else
@@ -51,6 +58,8 @@ public class FileSpout extends BaseRichSpout
     
         try
         {
+            // open file 
+            // filename is read from SunriseConfig singleton object
             file = new BufferedReader(new FileReader(SunriseConfig.getInstance().tweetsFile));
         } catch (FileNotFoundException e)
         {

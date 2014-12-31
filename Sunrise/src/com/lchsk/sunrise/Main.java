@@ -34,26 +34,11 @@ public class Main
     {
         SunriseConfig.getInstance().readTranslationsFile();
         SunriseConfig.getInstance().registerLogger(log);
+        
+        // unless it's for debugging, mode should be "LIVE"
         SunriseConfig.getInstance().setMode(Mode.LIVE);
 
-        try
-        {   
-            //https://raw.githubusercontent.com/drewnoakes/metadata-extractor-images/master/Apple%20iPhone%204.jpg
-            
-//            Double[] d = Utils.readImageCoordinates("http://lchsk.com/gps.jpg");
-//            System.out.println(d[1] + ", " + d[0]);
-            
-            
-
-//            System.out.println(DBConn.getInstance().findCity(-102.432504, 19.956083, 25000));
-//            System.out.println(DBConn.getInstance().findCity("", CitySearchMode.ALTERNATE_NAMES_FULL));
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            log.severe("Unable to connect to the database...");
-        }
-
-         Topology topology = new Topology();
-         topology.build();
+        Topology topology = new Topology();
+        topology.build();
     }
 }

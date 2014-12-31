@@ -24,6 +24,12 @@ import com.lchsk.sunrise.util.Utils;
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 
+/**
+ * Purpose of this is to obtain location
+ * of a person who posted a tweeted.
+ * As quite rarely coordinates are attached
+ * to the tweet, other methods are used as well. 
+*/
 public class LocationFinder extends BaseBasicBolt
 {
     private static final Logger log = Logger.getLogger(LocationFinder.class.getName());
@@ -42,6 +48,8 @@ public class LocationFinder extends BaseBasicBolt
     // location copied from user's profile
     private final int GEO_USER_PROFILE = 3;
     
+    // reading coordinates from image's EXIF data
+    // (that can contain GPS data)
     private final int GEO_IMAGE_COORDINATES = 4;
 
     // regardless of effort
@@ -68,6 +76,13 @@ public class LocationFinder extends BaseBasicBolt
         collector = p_collector;
         JSONObject json = (JSONObject) input.getValueByField("tweet");
 
+        // run methods used for identification
+        // we start with a method that's most reliable
+        // if it doesn't work, we try other ones
+        // order:
+        // 1) tweet's coordinates
+        // 2) location name (such as a city) in tweet's text
+        // 3) location from user's profile
         try
         {
             if (!getCoordinates(json))
@@ -97,11 +112,24 @@ public class LocationFinder extends BaseBasicBolt
         }
     }
 
+    /**
+     * Points out the sad fact, that we were not able to find location
+     * @param p_json
+     */
     private void saveNoLocation(JSONObject p_json)
     {
         p_json.put("sunrise_geo_type", GEO_NO_LOCATION);
     }
 
+    /**
+     * Gets coordinates from the tweet.
+     * If successful saves them for convenience
+     * and reads addition (Place) data.
+     * 
+     * @param p_json
+     * @return
+     * @throws UnknownHostException
+     */
     private boolean getCoordinates(JSONObject p_json) throws UnknownHostException
     {
         if (Utils.notEmpty(p_json.get("coordinates")))
@@ -110,8 +138,12 @@ public class LocationFinder extends BaseBasicBolt
             
             JSONObject point = (JSONObject) p_json.get("coordinates");
             
+            // later we check if the data related to specific place is available
+            
             if (point != null)
             {
+                // as twitter data is not always reliable
+                // we try to find a large city that is close to coordinates
                 JSONArray coords = (JSONArray) point.get("coordinates");
                 int id = DBConn.getInstance().findCity((double) coords.get(0), (double) coords.get(1), MAX_DISTANCE);
                 addCity(id, p_json, "closest_city");
@@ -119,6 +151,7 @@ public class LocationFinder extends BaseBasicBolt
 
             if (Utils.notEmpty(p_json.get("place")))
             {
+                // finds full name of the country (in English, as twitter does not provide it)
                 JSONObject o = (JSONObject) p_json.get("place");
                 p_json.put("country_full", (String) Utils.getCountry((String) o.get("country_code")));
                 String city = (String) o.get("name");
@@ -130,6 +163,14 @@ public class LocationFinder extends BaseBasicBolt
         return false;
     }
 
+    /**
+     * Adds to the JSON data a city from the DB (based on its ID).
+     * 
+     * @param p_id
+     * @param p_json
+     * @param p_key
+     * @throws UnknownHostException
+     */
     private void addCity(int p_id, JSONObject p_json, String p_key) throws UnknownHostException
     {
         if (p_id > -1)
@@ -140,8 +181,17 @@ public class LocationFinder extends BaseBasicBolt
         }
     }
 
+    /**
+     * Reads GPS data from image's EXIF data (image that is attached to the tweet).
+     * 
+     * @param p_json
+     * @return
+     * @throws UnknownHostException
+     */
     private boolean getImageCoordinates(JSONObject p_json) throws UnknownHostException
     {
+        // first get image URL from the tweet
+        
         if (p_json.containsKey("entities"))
         {
             JSONObject entities = (JSONObject) p_json.get("entities");
@@ -156,11 +206,14 @@ public class LocationFinder extends BaseBasicBolt
 
                     if (image.containsKey("media_url"))
                     {
+                        // get URL and run a helper function that returns coordinates
                         String url = (String) image.get("media_url");
                         Double[] coords = Utils.readImageCoordinates(url);
 
                         if (coords != null)
                         {
+                            // if the image cotains coordinates
+                            // find city that is close
                             int id = DBConn.getInstance().findCity(coords[0], coords[1], MAX_DISTANCE);
 
                             JSONArray tmp = new JSONArray();
@@ -182,6 +235,13 @@ public class LocationFinder extends BaseBasicBolt
         return false;
     }
 
+    /**
+     * Gets location from user's profile
+     * 
+     * @param p_json
+     * @return
+     * @throws UnknownHostException
+     */
     private boolean getProfileLocation(JSONObject p_json) throws UnknownHostException
     {
         if (p_json.containsKey("user"))
@@ -194,7 +254,11 @@ public class LocationFinder extends BaseBasicBolt
 
                 if (location.length() > 0)
                 {
+                    // we're interested only in a city
+                    // so state/country is removed
                     location = Utils.extractFirstPart(location);
+                    
+                    // try to find location in DB
                     int id = DBConn.getInstance().findCity(location, CitySearchMode.ORIGINAL_PLUS_ASCII);
                     if (id > -1)
                     {
@@ -213,20 +277,32 @@ public class LocationFinder extends BaseBasicBolt
         return false;
     }
 
+    /**
+     * Quick fix for problems
+     * with saving a tweet as a detail of other tweet
+     * @param o
+     * @return
+     */
     private DBObject fixId(DBObject o)
     {
-        //        String tmp = (String) o.get("_id");
-        //        tmp = "x" + tmp;
         o.put("_id", "123");
         return o;
     }
 
+    /** 
+     * Tries to find location in tweet's text.
+     * @param p_json
+     * @return
+     * @throws UnknownHostException
+     */
     private boolean lookForLocation(JSONObject p_json) throws UnknownHostException
     {
         String text = (String) p_json.get("text");
 
         if (text != null)
         {
+            // first, we look for two-word combinations
+            // will cities as San Francisco/Buenos Aires
             DBObject o = search(text, 2);
 
             if (o != null)
@@ -240,6 +316,7 @@ public class LocationFinder extends BaseBasicBolt
             }
             else
             {
+                // if no city was, try single words
                 o = search(text, 1);
 
                 if (o != null)
@@ -257,22 +334,40 @@ public class LocationFinder extends BaseBasicBolt
         return false;
     }
 
+    /**
+     * Searches for a city name in a text.
+     * 
+     * @param p_text tweet's text
+     * @param p_words number of words in a combination
+     * @return
+     * @throws UnknownHostException
+     */
     private DBObject search(String p_text, int p_words) throws UnknownHostException
     {
+        // split into array by whitespaces
         String[] words = p_text.split("\\s+");
 
+        // object that stores temporary data during search
         SearchTerms st = new SearchTerms(words, p_words);
 
         String t;
+        // get next combination
         while ((t = st.next()) != null)
         {
+            // remove words such as 'sunrise'
+            // helps to avoid finding cities such as:
+            // Sunrise, Florida or Aurora, Colorado
             t = removeKeywords(t);
 
+            // make first letter of each word upper-case
             String term = prepareSearchTerms(t);
 
+            // make sure search term is of specifc length
             if (term.length() < SEARCH_TERM_MIN_LENGTH)
                 continue;
-
+            
+            // look for cities
+            // search is performed among local language names as well as city names in other languages
             int id = DBConn.getInstance().findCity(term, CitySearchMode.ALTERNATE_NAMES_FULL);
             if (id > -1)
             {
@@ -304,6 +399,11 @@ public class LocationFinder extends BaseBasicBolt
         return str;
     }
 
+    /**
+     * Makes should that search term has upper-case first letters and does not include punctuation
+     * @param p_str
+     * @return
+     */
     private String prepareSearchTerms(String p_str)
     {
         return Utils.firstLettersUpperCase(Utils.removeNonAlphanumeric(p_str.toLowerCase()));

@@ -14,10 +14,14 @@ import org.joda.time.DateTime;
 
 import com.lchsk.sunrise.Main.Mode;
 
+/**
+ * Singleton class that holds all configuration.
+ */
 public class SunriseConfig
 {
     private static SunriseConfig instance = null;
 
+    // logging settings
     private FileHandler logFile;
     private final Logger log = Logger.getLogger(SunriseConfig.class.getName());
     private final String dateSeparator = "-";
@@ -42,7 +46,7 @@ public class SunriseConfig
 
     private Mode mode;
 
-    // config data
+    // connection data, ie a file where those information are stored
     private final String configFilename = "config";
     private HashMap<String, String> settings = new HashMap<String, String>();
 
@@ -66,7 +70,7 @@ public class SunriseConfig
     {
         try
         {
-            // set up log file
+            // set up a log file
             logFile = new FileHandler(logDirectory + getLogFilename(), false);
             logFile.setFormatter(new SimpleFormatter());
             registerLogger(log);
@@ -133,6 +137,8 @@ public class SunriseConfig
 
             while ((line = file.readLine()) != null)
             {
+                // format: 
+                // language=translation1,translation2 etc.
                 String[] data = line.split("=");
                 String[] temp = data[1].split(",");
 
@@ -198,6 +204,10 @@ public class SunriseConfig
         return mode;
     }
 
+    /**
+     * Returns all translations in one array
+     * @return
+     */
     public ArrayList<String> getTrackedWords()
     {
         ArrayList<String> tracked = new ArrayList<String>();
@@ -207,7 +217,6 @@ public class SunriseConfig
             tracked.addAll(translations.get(lang));
         }
 
-        // System.out.println(tracked);
         return tracked;
     }
 

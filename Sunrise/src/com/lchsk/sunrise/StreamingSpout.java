@@ -20,6 +20,13 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 
+/**
+ * StreamingSpout connects to the Twitter Streaming API
+ * (using Hosebird Client) and emits tweets.
+ * Can be used in real-time (live system) or
+ * for gathering tweets and storing them in file/DB.
+ *
+ */
 public class StreamingSpout extends BaseRichSpout
 {
     private final static Logger log = Logger.getLogger(StreamingSpout.class.getName());
@@ -53,8 +60,14 @@ public class StreamingSpout extends BaseRichSpout
         queue = new LinkedBlockingQueue<String>(10000);
         collector = p_collector;
         endpoint = new StatusesFilterEndpoint();
+        
+        // here, keywords to track are specified
+        // normally they're list of words, ie. 'sunrise' and its translations
         endpoint.trackTerms(SunriseConfig.getInstance().getTrackedWords());
 
+        // connection to Twitter Streaming API
+        // using keys and tokens from Config singleton
+        
         Authentication auth = new OAuth1(SunriseConfig.getInstance().consumerKey, SunriseConfig.getInstance().consumerSecret, SunriseConfig.getInstance().token, SunriseConfig.getInstance().secret);
 
         Client client = new ClientBuilder().hosts(Constants.STREAM_HOST).endpoint(endpoint).authentication(auth)

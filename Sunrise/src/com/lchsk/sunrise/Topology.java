@@ -13,12 +13,10 @@ import com.lchsk.sunrise.bolts.TweetsCollectorFile;
 import com.lchsk.sunrise.bolts.TweetsSummary;
 
 /**
- * To run this topology you should execute this main as: java -cp
- * theGeneratedJar.jar twitter.streaming.Topology <track> <twitterUser>
- * <twitterPassword>
- *
- * @author StormBook
- *
+ * Topology class describes different ways 
+ * that topology can be built.
+ * Depending on chosen topology, different 
+ * spouts and bolts are present.
  */
 public class Topology
 {
@@ -35,21 +33,23 @@ public class Topology
 
         switch (SunriseConfig.getInstance().getMode())
         {
-        // Purpose of this mode it to collect tweets
-        // and store them in a file for further processing
-        // (in debugging mode)
+            // Purpose of this mode it to collect tweets
+            // and store them in a file for further processing
+            // (in debugging mode)
             case COLLECT_TWEETS_FILE:
 
                 builder.setSpout("sunrise-tweets", new StreamingSpout(), 1);
                 builder.setBolt("tweets-collector-file", new TweetsCollectorFile()).shuffleGrouping("sunrise-tweets");
                 break;
-
+                
+            // Collect tweets and save them in DB
             case COLLECT_TWEETS_DB:
                 builder.setSpout("sunrise-tweets", new StreamingSpout(), 1);
                 builder.setBolt("tweets-collector-db", new TweetsCollectorDB()).shuffleGrouping("sunrise-tweets");
 
                 break;
-
+            
+            // debugging with file data
             case DEBUGGING:
 
                 builder.setSpout("sunrise-tweets", new FileSpout(), 1);
@@ -58,6 +58,7 @@ public class Topology
                 builder.setBolt("tweets-summary", new TweetsSummary()).shuffleGrouping("location-finder");
                 break;
 
+            // debugging with tweets from DB
             case DEBUGGING_DB:
 
                 builder.setSpout("sunrise-tweets", new DBSpout(), 1);
@@ -65,10 +66,13 @@ public class Topology
                 builder.setBolt("location-finder", new LocationFinder()).shuffleGrouping("language-identifier");
                 builder.setBolt("tweets-summary", new TweetsSummary()).shuffleGrouping("location-finder");
                 break;
-                
+            
+            // with this setting, the system will work in real-time
+            // spout will connect to twitter API and emit tweets
+            // that will later be processed, and results will 
+            // be saved to the DB
             case LIVE:
                 builder.setSpout("sunrise-tweets", new StreamingSpout(), 1);
-//                builder.setBolt("tweets-collector-db", new TweetsCollectorDB()).shuffleGrouping("sunrise-tweets");
                 builder.setBolt("language-identifier", new LanguageIdentifier()).shuffleGrouping("sunrise-tweets");
                 builder.setBolt("location-finder", new LocationFinder()).shuffleGrouping("language-identifier");
                 builder.setBolt("tweets-summary", new TweetsSummary()).shuffleGrouping("location-finder");

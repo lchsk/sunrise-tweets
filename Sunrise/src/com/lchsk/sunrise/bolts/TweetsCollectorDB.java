@@ -16,6 +16,11 @@ import com.lchsk.sunrise.util.Utils;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+/**
+ * Saves tweet in a temporary collection in DB.
+ * (Used for debugging)
+ *
+ */
 public class TweetsCollectorDB extends BaseBasicBolt
 {
     private static final Logger log = Logger.getLogger(TweetsCollectorDB.class.getName());
@@ -31,7 +36,9 @@ public class TweetsCollectorDB extends BaseBasicBolt
         DBCollection coll;
         try
         {
+            // for debugging, tweets are stored in a collection named 'source_tweets'
             coll = DBConn.getInstance().getSourceTweetsCollection();
+            
             DBObject o = Utils.parseJSON(input.getValueByField("tweet").toString());
             
             coll.insert(o);

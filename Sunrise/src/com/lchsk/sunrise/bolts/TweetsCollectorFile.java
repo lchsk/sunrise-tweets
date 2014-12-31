@@ -14,6 +14,11 @@ import backtype.storm.tuple.Tuple;
 
 import com.lchsk.sunrise.SunriseConfig;
 
+/**
+ * Similar to TweetsCollectorDB, but instead tweets are stored in a file.
+ * (Used for debugging).
+ *
+ */
 public class TweetsCollectorFile extends BaseBasicBolt
 {
     private static final Logger log = Logger.getLogger(TweetsCollectorFile.class.getName());
@@ -38,6 +43,7 @@ public class TweetsCollectorFile extends BaseBasicBolt
     {
         try
         {
+            // append tweet to the end of the file
             file.append(input.getValueByField("tweet").toString());
             file.flush();
         } catch (IOException e)

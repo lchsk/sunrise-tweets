@@ -17,6 +17,10 @@ import backtype.storm.tuple.Values;
 import com.lchsk.sunrise.SunriseConfig;
 import com.lchsk.sunrise.util.Utils;
 
+/**
+ * Purpose of this bolt is to identify language that was
+ * used to describe sunrise.
+ */
 public class LanguageIdentifier extends BaseBasicBolt
 {
     private static final Logger log = Logger.getLogger(LanguageIdentifier.class.getName());
@@ -32,8 +36,10 @@ public class LanguageIdentifier extends BaseBasicBolt
     public void execute(Tuple input, BasicOutputCollector p_collector)
     {
         collector = p_collector;
+        
         String tweet = input.getValueByField("tweet").toString();
         
+        // make sure we work only with JSON data
         if (Utils.isTweetAJSON(tweet))
         {
             JSONObject json;
@@ -41,11 +47,14 @@ public class LanguageIdentifier extends BaseBasicBolt
             {
                 json = Utils.getJSON(tweet);
                 String text = (String) json.get("text");
+                
+                // run identification
                 String lang = identifyLanguage(text);
                 json.put("sunrise_language", lang);
                 
                 try
                 {
+                    // emit for further processing
                     collector.emit(new Values(json));
                 } catch (Exception e)
                 {
@@ -61,12 +70,21 @@ public class LanguageIdentifier extends BaseBasicBolt
         }
     }
     
+    /**
+     * Method used for finding out in which language
+     * someone tweeted about sunrise
+     * 
+     * @param p_text
+     * @return
+     */
     private String identifyLanguage(String p_text)
     {
+        // go over all translations
         for (String lang : SunriseConfig.getInstance().getTranslationsMap().keySet())
         {
             for (String word : SunriseConfig.getInstance().getTranslationsMap().get(lang))
             {
+                // and find out if the word is in the tweet
                 if (p_text.toLowerCase().contains(word))
                     return lang;
             }

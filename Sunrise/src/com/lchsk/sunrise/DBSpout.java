@@ -15,6 +15,12 @@ import com.lchsk.sunrise.db.DBConn;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 
+/**
+ * DBSpout class opens a database connection,
+ * omits tweets stored in source_tweets collection
+ * (that were previously gathered).
+ *
+ */
 public class DBSpout extends BaseRichSpout
 {
     private final static Logger log = Logger.getLogger(DBSpout.class.getName());
@@ -34,6 +40,7 @@ public class DBSpout extends BaseRichSpout
         {
             if (cursor.hasNext())
             {
+                // emit tweet if there is one
                 collector.emit(new Values(cursor.next()));   
             }
         }
@@ -51,7 +58,10 @@ public class DBSpout extends BaseRichSpout
         collector = p_collector;
         try
         {
+            // gets collection "source_tweets"
             collection = DBConn.getInstance().getSourceTweetsCollection();
+            
+            // sets cursor, which will be used to get more entries
             cursor = collection.find();
         }
         catch (UnknownHostException e)
@@ -63,6 +73,7 @@ public class DBSpout extends BaseRichSpout
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
+        // just one field
         declarer.declare(new Fields("tweet"));
     }
 }

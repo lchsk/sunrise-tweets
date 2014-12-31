@@ -20,6 +20,10 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+/**
+ * Saves processed tweet in a database.
+ *
+ */
 public class TweetsSummary extends BaseBasicBolt
 {
     private static final Logger log = Logger.getLogger(TweetsSummary.class.getName());
@@ -36,21 +40,29 @@ public class TweetsSummary extends BaseBasicBolt
     public void execute(Tuple input, BasicOutputCollector p_collector)
     {
         collector = p_collector;
+        
+        // get emitted object from the previous bolt
         JSONObject json = (JSONObject) input.getValueByField("tweet");
-
-        //json.put("created_at", time);
 
         saveTweet(json);
     }
 
+    /**
+     * Saves tweet in a database.
+     * @param p_json
+     */
     private void saveTweet(JSONObject p_json)
     {
         DBObject o = null;
         try
         {
-            JSONObject tmp = (JSONObject) p_json.get("_id");
+            // change the class used to store JSON data
+            // throughout processing we use Java JSONObject class
+            // to save in Mongo, JSON needs to be in DBOject class
             o = Utils.parseJSON(p_json.toJSONString());
 
+            // convert the date from timestamp to the format
+            // used by Mongo
             long m = Long.valueOf((String) p_json.get("timestamp_ms"));
             Date d = new Date(m);
             o.put("created_at", d);
@@ -77,6 +89,7 @@ public class TweetsSummary extends BaseBasicBolt
     {
         try
         {
+            // obtain collection that is used to store tweets
             collection = DBConn.getInstance().getDestinationTweetsCollection();
         }
         catch (UnknownHostException e)
