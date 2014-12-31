@@ -4,28 +4,16 @@ socket.on('connect', function() {
   initMap();
 });
 
-
-
-
-
-
-
-
-
-
-
 socket.on('tweets', function(data){
 
-  var template = '<div style="background-color: white; width: 22%; float: left; margin: 8px;"><a class="small" href="http://twitter.com/:screen_name" data-placement="left" title=":description"><b>:name</b> (:screen_name):</a><br /> <small>:text</small><br /><small><i>:created_at</i></small><br /><small><i>sunrise</i> word found in :sunrise_language</small> <br /><small>Location: :city_name :country_name (:sunrise_geo_type)<br />City w/in 30 km, based on coordinates: :large_city</small><br />:button</div>';
+  var template = '<div class="tpl-tweet-list" style="background-color: white; width: 22%; float: left; margin: 8px;"><a class="small" href="http://twitter.com/:screen_name" data-placement="left" title=":description"><b>:name</b> (:screen_name):</a><br /> <small>:text</small><br /><small><i>:created_at</i></small><br /><small><i>sunrise</i> word found in :sunrise_language</small> <br /><small>Location: :city_name :country_name (:sunrise_geo_type)<br />City w/in 30 km, based on coordinates: :large_city</small><br />:button :show_on_map</div>';
 
   var popup_template = '<a class="small" href="http://twitter.com/:screen_name" title=":description"><b>:name</b> (:screen_name):</a><br /> <small>:text</small><br /><small><i>:created_at</i></small><br /><small><i>sunrise</i> word found in :sunrise_language</small><br /><small>Location: :city_name :country_name (:sunrise_geo_type)<br />City w/in 30 km, based on coordinates: :large_city</small><br />:button';
 
   var added = 0;
 
   calculate_stats(data);
-
   markers.clearLayers();
-
 
   for (var i = 0; i < data.length; i++)
   {
@@ -116,6 +104,14 @@ function showView(p_context)
     map.setView([data[0], data[1]], data[2]);
     showView($("#btn-map"));
   });
+
+  $("#list").on('click', '.btn-show-on-map', function(){
+    var long = $(this).attr('data-long');
+    var lat = $(this).attr('data-lat');
+    map.setView([lat, long], 7);
+    showView($("#btn-map"));
+  });
+
 
   $("#btn-submit").click(function(){
     var photos_only = $("#form-photos-only").is(':checked');

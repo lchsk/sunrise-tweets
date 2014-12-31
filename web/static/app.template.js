@@ -7,6 +7,14 @@ function applyTemplateLocation(p_template, p_d)
     var place = p_d.place;
     var closest_city = p_d.closest_city;
 
+    if (p_d['coordinates'] != undefined && p_d['coordinates']['coordinates'] != undefined)
+    {
+      var coords = p_d['coordinates']['coordinates'];
+      var button_code = '<a href="#" data-long="' + coords[0] + '" data-lat="' + coords[1] + '" class="btn btn-primary btn-sm btn-show-on-map"><span class="glyphicon glyphicon-globe"></span> Show on a map</a>';
+
+      p_template = replaceAll(p_template, ':show_on_map', button_code);
+    }
+
     if (place != undefined)
     {
       p_template = fillWorker(place, p_template, 'name', 'city_name');
@@ -27,6 +35,10 @@ function applyTemplateLocation(p_template, p_d)
     {
       p_template = fillWorker(place, p_template, 'name', 'city_name');
       p_template = fillWorker(place, p_template, 'country code', 'country_name');
+
+      var button_code = '<a href="#" data-long="' + place.longitude + '" data-lat="' + place.latitude + '" class="btn btn-primary btn-sm btn-show-on-map"><span class="glyphicon glyphicon-globe"></span> Show on a map</a>';
+
+      p_template = replaceAll(p_template, ':show_on_map', button_code);
     }
   }
   else if (p_d['sunrise_geo_type'] == GEO_NO_LOCATION)
@@ -53,7 +65,6 @@ function applyTemplate(p_template, p_d)
 
   t = fill(p_d, t, "created_at");
   t = fill(p_d, t, "sunrise_language");
-  // t = fill(p_d, t, "sunrise_geo_type");
 
   if (p_d['retweet_count'] > 0)
   {
@@ -62,8 +73,7 @@ function applyTemplate(p_template, p_d)
   if (p_d['entities']['media'] != undefined)
   {
     var url = p_d['entities']['media'][0]['media_url'];
-    // var id_str = p_d['entities']['media'][0]['id_str'];
-    t = t.replace(':button', "<br /><a style='color: white;' modal-image='" + url + "' class='btn btn-primary btn-sm btn-show-img' href='#'>Show photo</a>");
+    t = t.replace(':button', "<br /><a style='color: white;' modal-image='" + url + "' class='btn btn-primary btn-sm btn-show-img' href='#'><span class='glyphicon glyphicon-camera'></span> Show photo</a>");
   }
   else
   {
@@ -71,7 +81,6 @@ function applyTemplate(p_template, p_d)
   }
 
   t = applyTemplateLocation(t, p_d);
-
   t = removeTags(t);
 
   return t;
