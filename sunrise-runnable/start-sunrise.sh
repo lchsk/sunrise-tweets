@@ -1,4 +1,4 @@
 #!/bin/bash
 
 mkdir -p ./log
-./sunrise.jar
+java -jar ./sunrise.jar
