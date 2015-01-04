@@ -1,3 +1,5 @@
+global.pwd = __dirname;
+console.log(pwd);
 var express = require('express');
 var _ = require('underscore');
 var app = express();
@@ -22,10 +24,10 @@ server_port = 3000;
 // website's address
 www_host = 'http://localhost:3000';
 
-runnable_path = '../sunrise-runnable';
-web_path = '../web';
-start_script = './start-sunrise.sh';
-stop_script = './stop-sunrise.sh';
+runnable_path = pwd + '/../sunrise-runnable';
+web_path = pwd + '../web';
+start_script = pwd + '/../sunrise-runnable/start-sunrise.sh';
+stop_script = pwd + '/../sunrise-runnable/stop-sunrise.sh';
 
 //-- end of settings
 
@@ -35,7 +37,8 @@ app.set('view options', { layout: false });
 app.use(express.methodOverride());
 app.use(express.bodyParser());
 app.use(app.router);
-app.use('/static', express.static('static'));
+app.use('/static', express.static(pwd + '/static'));
+app.set('views', pwd + '/views');
 
 app.get('/', function (req, res) {
   res.render('index', { host: www_host });
